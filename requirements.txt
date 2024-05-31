@@ -1,4 +1,3 @@
-# SPDX-FileCopyrightText: (C) 2023 AREA SCIENCE PARK - RIT <orfeo.operations@areasciencepark.it>
 # This list may not be exhaustive, depending of your need
 # Disclaimer: packages may have different names in Debian-based systems
 

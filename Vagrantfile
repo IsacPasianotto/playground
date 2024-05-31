@@ -27,11 +27,11 @@ tocopy = [
 ]
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "fedora/40-cloud-base"
+  config.vm.box = "fedora/39-cloud-base"
   
   config.vm.provider :libvirt do |lv|
     lv.qemu_use_session = false
-    lv.memory = 4096
+    lv.memory = 3072
     lv.cpus = 2
   end
 

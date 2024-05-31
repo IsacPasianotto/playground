@@ -37,7 +37,7 @@ The VMs are defined in the [[./Vagrantfile][Vagrantfile]] and can be customized 
 To start the VMs run:
 
 #+begin_src sh
-sudo virsh ned-define scripts/kube-net.xml
+sudo virsh net-define scripts/kube-net.xml
 sudo virsh net-start kube-net
 vagrant up --provider=libvirt --no-parallel
 #+end_src

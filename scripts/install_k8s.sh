@@ -1,12 +1,7 @@
 #!/bin/bash
 
-# Attribution: 
-#     Script builded following the tutorial from the course this exercise is part of.
-#     The original tutorial can be found at: 
-#     https://github.com/Foundations-of-HPC/Cloud-advanced-2023/blob/main/live-demos/kubernetes/0-kube-installation/notes.org
-
 # Login as root, as some of the commands require root access
-sudo su 
+sudo su
 
 ########   PRELIMINARY STEPS   ########
 
@@ -42,7 +37,7 @@ dnf install -y iproute-tc wget vim bash-completion bat
 
 ########     K8S INSTALLATION     ########
 
-# Set the repository 
+# Set the repository
 cat << EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes

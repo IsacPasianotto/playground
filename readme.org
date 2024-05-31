@@ -1,0 +1,105 @@
+ #+title: Playground
+ #+author: [[https://github.com/IsacPasianotto/][Isac Pasianotto]]
+
+Vagrant-based system to spawn a ready to use multi-node Kubernetes/Slurm VMs cluster.
+Usable for testing purposes, learning, and development.
+
+* 0. Prerequisites and dependencies
+
+The only prerequisites are basic virtualization tools, in particular with ~Vagrant~ and it's dependencies. The virtualization is done using `libvirt` and `qemu-kvm` on Linux systems, but it should be possible (not tested) to use other providers like VirtualBox or VMware.
+
+On RHEL-based system you can install them with:
+
+#+begin_src sh
+sudo dnf install -y $(sed -r '/^#/d' requirements.txt)
+#+end_src
+
+Even if it's not strictly necessary, I highly recommend to install ~vagrant-scp~ plugin to easily copy files to/from the VMs.
+
+#+begin_src sh
+vagrant plugin install vagrant-scp
+#+end_src
+
+
+* 1. Set up the VMs
+
+The VMs are defined in the [[./Vagrantfile][Vagrantfile]] and can be customized to your needs.
+
+  * By default the cluster are composed by 1 master (~kube-00~) and 2 workers nodes.
+  * The VMs are based on Fedora cloud images
+  * ~k8s~ is used as Kuberentes cluster manager
+  * The default user is ~vagrant~ with password ~vagrant~
+  * In the home of ~vagrant~ user, there is mounted as shared folder among nodes the `shared` directory. 
+  * Feel free to changes number of nodes and resources, but be aware that:
+    - To run Kubernetes the minimum requirements are 2GB of RAM and 2 CPUs
+    - You need to manually adjust the files [[./scripts/slurm_install.sh][slurm_install.sh]] and [[./scripts/slurm_worker.sh][slurm_worker.sh]] to reflect the number of nodes and their names. This should be done both at the begining of the file, where it defines int ~/etc/hosts~ the names of the nodes, and  at the end, where it creates the ~slurm.conf~ file.
+
+To start the VMs run:
+
+#+begin_src sh
+sudo virsh ned-define scripts/kube-net.xml
+vagrant up --provider=libvirt --no-parallel
+#+end_src
+
+Once the VMs are up and running, you can access them with:
+
+#+begin_src sh
+vagrant ssh kube-00
+#+end_src
+
+Note that `vagrant` take cares of the SSH keys and the IP addresses of the VMs, however, if you need to access the VMs directly (e.g. to use the ssh extension for VScode) , you can use the ~ssh~ keys available in the [[./ssh][ssh]] directory.
+
+* 2. Set up the CNI
+
+** Install a CNI
+
+By default no Container Network Interface (CNI) is installed. You can choose between ~flannel~ and ~calico~ by running (ssh into the master node):
+
+#+begin_src sh
+/home/vagrant/deploy_calico.sh
+#+end_src
+
+or
+
+#+begin_src sh
+/home/vagrant/deploy_flannel.sh
+#+end_src
+
+this will launch the already pre-configured scripts [[./scripts/deploy_calico.sh][deploy_calico.sh]] and [[./scripts/deploy_flannel.sh][deploy_flannel.sh]].
+
+**Important**: once the CNI is installed - you can check it using ~kubectl~ or ~k9s~ - you must restart all the nodes to apply the changes. To do that just run:
+
+#+begin_src sh
+vagrant reload
+#+end_src
+
+** Uninstall a CNI
+
+To switch between CNIs or to uninstall it, you can run:
+
+#+begin_src sh
+helm uninstall flannel --namespace kube-flannel
+#+end_src
+
+or
+
+#+begin_src sh
+kubectl delete -f /home/vagrant/calico.yaml
+#+end_src
+
+and then restart the nodes.
+
+
+* 3. Use the virtual cluster in HPC-flavored mode
+
+The cluster is also configured to run Slurm, a job scheduler and resource manager for HPC systems. All the nodes are configured as a ~debug~ partition.
+
+**Remark**: At this moment, due to some issues, the Slurm is working only for the ~root~ users. Enabling it for non-root users is a future TODO. Since this environment should be used for testing and learning purposes, this limitation should not be a big deal.
+
+
+
+* TODO and working in progress:
+
+- [ ] Optimize the automatic deployment using ~Ansible~ and ~kubespray~
+- [ ] Enable Slurm for non-root users
+- [ ] Add more CNIs (e.g. ~cilium~)

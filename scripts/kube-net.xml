@@ -1,5 +1,5 @@
 <network>
-    <name>ex3-net</name>
+    <name>kube-net</name>
     <forward mode='nat'>
         <nat>
             <port start='1024' end='65535'/>

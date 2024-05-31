@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Login as root, as some of the commands require root access
-sudo su 
+sudo su
 
 ########   PRELIMINARY STEPS   ########
 
@@ -37,7 +37,7 @@ dnf install -y iproute-tc wget vim bash-completion bat
 
 ########     K8S INSTALLATION     ########
 
-# Set the repository 
+# Set the repository
 cat << EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes

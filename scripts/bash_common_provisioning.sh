@@ -5,11 +5,11 @@ nmcli c del "Wired connection 2";
 fi
 
 if [[ $(nmcli -t c show  | grep ex3 | wc -l) -ne 0 ]]; then
-nmcli c del "ex3-net";
+nmcli c del "kube-net";
 fi
 
 nmcli con add type ethernet \
-    con-name ex3-net \
+    con-name kube-net \
     ifname eth1 \
     ip4 $1/24 \
     gw4 192.168.132.1 \

@@ -7,33 +7,21 @@ sudo su
 ### Populate /etc/hosts file with the IP addresses and hostnames of the nodes in the cluster
 
 echo "" >> /etc/hosts
-echo "192.168.132.60 ex3-00 ex3-00" >> /etc/hosts
-echo "192.168.132.61 ex3-01 ex3-01" >> /etc/hosts
-# echo "192.168.132.62 ex3-02 ex3-02" >> /etc/hosts
+echo "192.168.132.60 kube-00 kube-00" >> /etc/hosts
+echo "192.168.132.61 kube-01 kube-01" >> /etc/hosts
+echo "192.168.132.62 kube-02 kube-02" >> /etc/hosts
 
-####  Set the NFS server on the master node
-
+### Set the NFS server on the client nodes
 
 dnf install -y nfs-utils libnfsidmap sssd-nfs-idmap
-systemctl enable --now nfs-server.service
 
-mkdir -p /home/vagrant
+mkdir -p /home/vagrant/
 mkdir -p /home/vagrant/shared
-chown nobody:nobody /home/vagrant/shared
-chmod 777 /home/vagrant/shared
-mkdir -p /export/home
-mkdir -p /export/home/vagrant
-mkdir -p /export/home/vagrant/shared
-sudo chown nobody:nobody /export/home/vagrant
-sudo chmod 777 /export/home/vagrant/shared
-echo '/export/home/vagrant/shared *(rw,sync,no_subtree_check,no_root_squash)' | sudo tee -a /etc/exports
 
-echo "ex3-00:/export/home/vagrant/shared /home/vagrant/shared nfs defaults 0 0" | sudo tee -a /etc/fstab
+mount -t nfs kube-00:/export/home/vagrant/shared /home/vagrant/shared
+echo 'ex3-00:/export/home/vagrant/shared /home/vagrant/shared nfs defaults 0 0' | sudo tee -a /etc/fstab
 
-exportfs -a
-mount -t nfs ex3-00:/export/home/vagrant/shared /home/vagrant/shared
-
-systemctl enable --now nfs-client
+systemctl enable --now nfs-client.target
 
 ### Slurm needs munge to be installed and running on all nodes
 
@@ -52,20 +40,12 @@ useradd  -m -c "SLURM workload manager" -d /var/lib/slurm -u $SLURMUSER -g slurm
 sudo dnf install -y munge munge-libs munge-devel
 sudo systemctl enable munge
 
-# Generate the munge key
-# dd if=/dev/urandom bs=1 count=1024 | sudo tee /etc/munge/munge.key > /dev/null
+# Retrieve the munge key from the master node
+export ipmaster=192.168.132.60
+scp -o StrictHostKeyChecking=no root@$ipmaster:/home/vagrant/munge.key /home/vagrant/munge.key
+mv /home/vagrant/munge.key /etc/munge/munge.key
 
 
-#  ######  BACKUP ....
-#
-# sudo -u munge /usr/sbin/mungekey --verbose
-# chown munge:munge /etc/munge/munge.key
-# chown -R munge:munge /etc/munge /var/log/munge /var/run/munge
-# chmod 700 /etc/munge
-# chmod 400 /etc/munge/munge.key
-
-#### Tentativo bis
-sudo -u munge /usr/sbin/mungekey --verbose
 chown munge:munge /etc/munge/munge.key
 chown -R munge:munge /etc/munge /var/log/munge /var/run/munge
 mkdir -p /runu/munge
@@ -74,22 +54,16 @@ chown munge:munge /run/munge
 chmod 0600 /etc/munge/munge.key
 
 
-# only to be able to copy the key from other nodes
-cp /etc/munge/munge.key /home/vagrant/munge.key
-chown vagrant:vagrant /home/vagrant/munge.key
-chmod 666 /home/vagrant/munge.key
-
 systemctl start munge
 
-####### Install Slurm  ###########
 
+######      INSTALL SLURM       ######
 sudo dnf install -y slurm-slurmd slurm-pam_slurm
-
 
 rm -f /etc/slurm/slurm.conf
 cat << EOF | sudo tee /etc/slurm/slurm.conf
 ClusterName=slurmcluster
-SlurmctldHost=ex3-00
+SlurmctldHost=kube-00
 ProctrackType=proctrack/linuxproc
 
 ReturnToService=2
@@ -126,8 +100,9 @@ SlurmdDebug=info
 
 SlurmdLogFile=/var/log/slurm/slurmd.log
 
-NodeName=ex3-00 NodeAddr=192.168.132.60 CPUs=2 RealMemory=2196
-NodeName=ex3-01 NodeAddr=192.168.132.61 CPUs=2 RealMemory=2196
+NodeName=kube-00 NodeAddr=192.168.132.60 CPUs=2 RealMemory=2196
+NodeName=kube-01 NodeAddr=192.168.132.61 CPUs=2 RealMemory=2196
+NodeName=kube-02 NodeAddr=192.168.132.62 CPUs=2 RealMemory=2196
 
 # PartitionName ################################################################
 #
@@ -142,15 +117,15 @@ NodeName=ex3-01 NodeAddr=192.168.132.61 CPUs=2 RealMemory=2196
 PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP
 EOF
 
-dnf install -y slurm-slurmctld
-systemctl enable slurmctld
-systemctl start slurmctld
 systemctl enable slurmd
 systemctl start slurmd
 
+chown -R slurm:slurm /var/spool/slurm/
 
 
-###### Set the right permission also there:
+
+########## Set the right permission also there:
+
 mkdir -p /run/slurm
 chmod 0755 /run/slurm
 chown -R slurm:slurm /run/slurm
@@ -158,5 +133,5 @@ mkdir -p /var/spool/slurm
 chown -R slurm:slurm /var/spool/slurm
 chown -R slurm:slurm /var/log/slurm
 
-mkdir -p /var/lib/slurm/slurmd
+mkdir -p /var/lib/slurm/slurmd/
 sudo chown -R slurm:slurm /var/lib/slurm/slurmd/

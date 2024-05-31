@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: (C) 2023 AREA SCIENCE PARK - RIT <orfeo.operations@areasciencepark.it>
+# This list may not be exhaustive, depending of your need
+# Disclaimer: packages may have different names in Debian-based systems
+
+virt-install
+libvirt-daemon-config-network
+libvirt-daemon-kvm
+libvirt-devel
+qemu-kvm
+virt-manager
+virt-viewer
+guestfs-tools
+python3-libguestfs
+virt-top
+vagrant
+dnf-plugins-core
+gettext
+diffstat
+doxygen
+git
+patch
+patchutils
+subversion
+systemtap
+python-lxml

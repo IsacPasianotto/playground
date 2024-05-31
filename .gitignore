@@ -1,0 +1,4 @@
+# Vagrant directory :
+
+.vagrant/
+.vagrant/*

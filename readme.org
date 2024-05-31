@@ -99,7 +99,7 @@ The cluster is also configured to run Slurm, a job scheduler and resource manage
 
 
 
-* TODO and working in progress:
+* *TODO* and working in progress:
 
 - [ ] Optimize the automatic deployment using ~Ansible~ and ~kubespray~
 - [ ] Enable Slurm for non-root users

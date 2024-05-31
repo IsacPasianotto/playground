@@ -32,7 +32,7 @@ The VMs are defined in the [[./Vagrantfile][Vagrantfile]] and can be customized 
   * In the home of ~vagrant~ user, there is mounted as shared folder among nodes the `shared` directory. 
   * Feel free to changes number of nodes and resources, but be aware that:
     - To run Kubernetes the minimum requirements are 2GB of RAM and 2 CPUs
-    - You need to manually adjust the files [[./scripts/slurm_install.sh][slurm_install.sh]] and [[./scripts/slurm_worker.sh][slurm_worker.sh]] to reflect the number of nodes and their names. This should be done both at the begining of the file, where it defines int ~/etc/hosts~ the names of the nodes, and  at the end, where it creates the ~slurm.conf~ file.
+    - You need to manually adjust the files [[./scripts/slurm_install.sh][slurm_install.sh]] and [[./scripts/slurm_worker.sh][slurm_worker.sh]] to reflect the number of nodes and their names. This should be done both at the begin of the file, where it defines int ~/etc/hosts~ the names of the nodes, and  at the end, where it creates the ~slurm.conf~ file.
 
 To start the VMs run:
 

@@ -31,7 +31,7 @@ echo '/export/home/vagrant/shared *(rw,sync,no_subtree_check,no_root_squash)' | 
 echo "kube-00:/export/home/vagrant/shared /home/vagrant/shared nfs defaults 0 0" | sudo tee -a /etc/fstab
 
 exportfs -a
-mount -t nfs ex3-00:/export/home/vagrant/shared /home/vagrant/shared
+mount -t nfs kube-00:/export/home/vagrant/shared /home/vagrant/shared
 
 systemctl enable --now nfs-client
 

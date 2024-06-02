@@ -14,6 +14,16 @@ On RHEL-based system you can install them with:
 sudo dnf install -y $(sed -r '/^#/d' requirements.txt)
 #+end_src
 
+and enable the virtualization services:
+
+#+begin_src sh
+sudo systemctl enable --now libvirtd
+sudo usermod -aG libvirt $(whoami)
+vagrant plugin install vagrant-libvirt
+#+end_src
+
+
+
 Even if it's not strictly necessary, I highly recommend to install ~vagrant-scp~ plugin to easily copy files to/from the VMs.
 
 #+begin_src sh

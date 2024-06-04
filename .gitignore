@@ -2,3 +2,7 @@
 
 .vagrant/
 .vagrant/*
+
+
+# kube-config file :
+playground_kubeconfig.yaml

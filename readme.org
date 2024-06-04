@@ -60,6 +60,21 @@ vagrant ssh kube-00
 
 Note that `vagrant` take cares of the SSH keys and the IP addresses of the VMs, however, if you need to access the VMs directly (e.g. to use the ssh extension for VScode) , you can use the ~ssh~ keys available in the [[./ssh][ssh]] directory.
 
+** 1.1 kubeconfig file
+
+You can control the cluster using the ~kubectl~ command. To do that you don't need to ssh into the master node every time, but you can use the ~kubeconfig~ file available in the ~vagrant~ user home directory. To use it, you can copy it to your local machine with:
+
+#+begin_src sh
+vagrant scp kube-00:/home/vagrant/.kube/config ./playground_kubeconfig.yaml 
+#+end_src
+
+and then set the ~KUBECONFIG~ environment variable to point to the file:
+
+#+begin_src sh
+export KUBECONFIG=$(pwd)/playground_kubeconfig.yaml
+#+end_src
+
+
 * 2. Set up the CNI
 
 ** Install a CNI

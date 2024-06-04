@@ -4,5 +4,10 @@
 .vagrant/*
 
 
+# directory in which I do my experiments :
+
+/tmp/
+/tmp/*
+
 # kube-config file :
 playground_kubeconfig.yaml

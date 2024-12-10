@@ -30,7 +30,7 @@ export MUNGEUSER=1001
 groupadd -g $MUNGEUSER munge
 useradd  -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge -u $MUNGEUSER -g munge -s /sbin/nologin munge
 mkdir  -p /etc/munge /var/log/munge /var/run/munge
-chown  munge:munge /var/log/munge /var/run/munge
+# chown  munge:munge /var/log/munge /var/run/munge
 
 export SLURMUSER=1002
 groupadd -g $SLURMUSER slurm
@@ -47,12 +47,18 @@ mv /home/vagrant/munge.key /etc/munge/munge.key
 
 
 chown munge:munge /etc/munge/munge.key
-chown -R munge:munge /etc/munge /var/log/munge /var/run/munge
-mkdir -p /runu/munge
-chmod 0755 /run/munge
-chown munge:munge /run/munge
-chmod 0600 /etc/munge/munge.key
+chown -R munge:munge /var/lib/munge
+chown munge:munge /var/log/munge
+chown munge:munge /etc/munge
+chown munge:munge /var/log/munge/munged.log
+chmod 400 /etc/munge/munge.key
+chmod 700 /etc/munge
 
+# chown -R munge:munge /etc/munge /var/run/munge
+# mkdir -p /runu/munge
+# chmod 0755 /run/munge
+# chown munge:munge /run/munge
+# chmod 0600 /etc/munge/munge.key
 
 systemctl start munge
 
@@ -100,9 +106,9 @@ SlurmdDebug=info
 
 SlurmdLogFile=/var/log/slurm/slurmd.log
 
-NodeName=kube-00 NodeAddr=192.168.132.60 CPUs=2 RealMemory=2196
-NodeName=kube-01 NodeAddr=192.168.132.61 CPUs=2 RealMemory=2196
-NodeName=kube-02 NodeAddr=192.168.132.62 CPUs=2 RealMemory=2196
+NodeName=kube-00 NodeAddr=192.168.132.60 CPUs=2 RealMemory=1953
+NodeName=kube-01 NodeAddr=192.168.132.61 CPUs=2 RealMemory=1953
+NodeName=kube-02 NodeAddr=192.168.132.62 CPUs=2 RealMemory=1953
 
 # PartitionName ################################################################
 #

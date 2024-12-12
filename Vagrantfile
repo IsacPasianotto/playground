@@ -7,18 +7,23 @@ servers = [
 ]
 
 controlpscripts = [
-  './scripts/bash_common_provisioning.sh',
-  './scripts/install_k8s.sh',
-  './scripts/other_conveniences.sh',
-  './scripts/slurm_install.sh',
-  './scripts/enable_MPI.sh',
+  './scripts/00-bash_common_provisioning.sh',
+  './scripts/10-k8s_common_provisioning.sh',
+  './scripts/11-k8s_control_plane.sh',
+  './scripts/20-munge_master.sh',
+  './scripts/30-slurm_common_provisioning.sh',
+  './scripts/31-slurm_master.sh',
+  './scripts/40-nfs_master.sh',
 ]
 
 scripts = [
-  './scripts/bash_common_provisioning.sh',
-  './scripts/install_k8s_worker.sh',
-  './scripts/slurm_worker.sh',
-  './scripts/enable_MPI.sh',
+  './scripts/00-bash_common_provisioning.sh',
+  './scripts/10-k8s_common_provisioning.sh',
+  './scripts/12-k8s_worker_nodes.sh',
+  './scripts/21-munge_workers.sh',
+  './scripts/30-slurm_common_provisioning.sh',
+  './scripts/32-slurm_worker.sh',
+  './scripts/41-nfs_workers.sh',
 ]
 
 tocopy = [
@@ -28,7 +33,7 @@ tocopy = [
 
 Vagrant.configure("2") do |config|
   config.vm.box = "fedora/39-cloud-base"
-  
+
   config.vm.provider :libvirt do |lv|
     lv.qemu_use_session = false
     lv.memory = 2048
@@ -47,7 +52,8 @@ Vagrant.configure("2") do |config|
         controlpscripts.each do |script|
           node.vm.provision :shell,
                             :path => script,
-                            :args => [conf[:ip]]
+                            :args => [conf[:ip]],
+                            :privileged => true
         end
 
         node.vm.provision :shell,

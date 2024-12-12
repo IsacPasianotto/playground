@@ -1,5 +1,9 @@
 #! /bin/bash
 
+##
+## Network config
+##
+
 if [[ $(nmcli -t c show  | grep "Wired connection 2" | wc -l) -ne 0 ]]; then
 nmcli c del "Wired connection 2";
 fi
@@ -17,6 +21,10 @@ nmcli con add type ethernet \
     autoconnect yes;
 
 nmcli con up kube-net;
+
+##
+## Use the keys in ../ssh to access the VMs
+##
 
 echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCxToLxTa5zzD6EboxuHsuLcnJ5XK5gUjthGbYRayO7k3GCF0m2IxMP3X3ji00+QY0I7SNmg20uv1Yf6Pz0qHHe8XPhT2A4t0i/ERgSqncwmd272R26UGcITxoWFc3dM6daFJrso/VbHDhAsjr1zJm51s0/aE8SImWuzNwdD5vM37J8oayLgNrd3HslIgFuEVp+4L2/wEbl9QwP94GIGpQ6wSgN33eHuX4oFj7brAnACaprQVJ20DbPpzlRhEUHc8gqSFqx4PERAQoSddfbhuZNv1wNB7+J50jybPbLRqFl2BN763i90xLahncZrb867ETPG7n8OZHqAleIAdw3iH1cy0gtkKU/fLTakFn7rxTIYwMDMG8soPL1N7B+PFC+1pMKCesBFWJpLQtiYXOmYQFETBYV0puOUrB7m2M9nb9LJFTlHxTj7sPFxuyDOqf8HuT5Wwf1dxEzjuvw/P/+zUFnQshd/NlczBzork2qaUwf14qchmM/ZX0EsOU5U6+D2e8= hpc-devel" >> /root/.ssh/authorized_keys
 
@@ -73,3 +81,52 @@ chown vagrant:vagrant /home/vagrant/.ssh/id_rsa
 chmod 600 /home/vagrant/.ssh/id_rsa.pub
 
 chmod 600 /root/.ssh/authorized_keys;
+
+##
+## Install some useful packets
+##
+
+# tools
+sudo dnf install -y bat htop \
+     tmux curl git util-linux-user \
+     podman helm \
+     nfs-utils libnfsidmap sssd-nfs-idmap \
+     munge munge-libs munge-devel \
+     slurm-slurmd slurm-pam_slurm \
+     openmpi openmpi-devel \
+     gcc gcc-c++ gcc-gfortran \
+     wget vim
+
+# Install k9s
+cd /tmp
+wget https://github.com/derailed/k9s/releases/download/v0.28.2/k9s_Linux_amd64.tar.gz
+tar -xvf k9s_Linux_amd64.tar.gz
+chmod +x k9s
+sudo mv k9s /usr/local/bin
+
+cat << EOF | tee -a /home/vagrant/.bashrc
+EDITOR=vim
+alias k=kubectl
+source <(kubectl completion bash)
+EOF
+
+##
+## Poor dns
+##
+
+echo "" >> /etc/hosts
+echo "192.168.132.60 kube-00 kube-00" >> /etc/hosts
+echo "192.168.132.61 kube-01 kube-01" >> /etc/hosts
+echo "192.168.132.62 kube-02 kube-02" >> /etc/hosts
+
+##
+## Enable MPI and make modules auto-load
+##
+
+echo "source /etc/profile.d/modules.sh" >> /etc/bashrc
+echo "source /etc/profile.d/modules.sh" >> /root/.bashrc
+echo "source /etc/profile.d/modules.sh" >> /home/vagrant/.bashrc
+
+echo "module load mpi/openmpi-x86_64" >> /etc/bashrc
+echo "module load mpi/openmpi-x86_64" >> /root/.bashrc
+echo "module load mpi/openmpi-x86_64" >> /home/vagrant/.bashrc

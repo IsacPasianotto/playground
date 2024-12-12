@@ -1,72 +1,14 @@
 #!/bin/bash
 
-# Login as root, as some of the commands require root access
-sudo su 
-
-
-### Populate /etc/hosts file with the IP addresses and hostnames of the nodes in the cluster
-
-echo "" >> /etc/hosts
-echo "192.168.132.60 kube-00 kube-00" >> /etc/hosts
-echo "192.168.132.61 kube-01 kube-01" >> /etc/hosts
-echo "192.168.132.62 kube-02 kube-02" >> /etc/hosts
-
-### Set the NFS server on the client nodes
-
-dnf install -y nfs-utils libnfsidmap sssd-nfs-idmap
-
-mkdir -p /home/vagrant/
-mkdir -p /home/vagrant/shared
-
-mount -t nfs kube-00:/export/home/vagrant/shared /home/vagrant/shared
-echo 'kube-00:/export/home/vagrant/shared /home/vagrant/shared nfs defaults 0 0' | sudo tee -a /etc/fstab
-
-systemctl enable --now nfs-client.target
-
-### Slurm needs munge to be installed and running on all nodes
-
-
-export MUNGEUSER=1001
-groupadd -g $MUNGEUSER munge
-useradd  -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge -u $MUNGEUSER -g munge -s /sbin/nologin munge
-mkdir  -p /etc/munge /var/log/munge /var/run/munge
-# chown  munge:munge /var/log/munge /var/run/munge
-
 export SLURMUSER=1002
 groupadd -g $SLURMUSER slurm
 useradd  -m -c "SLURM workload manager" -d /var/lib/slurm -u $SLURMUSER -g slurm -s /bin/bash slurm
 
-
-sudo dnf install -y munge munge-libs munge-devel
-sudo systemctl enable munge
-
-# Retrieve the munge key from the master node
-export ipmaster=192.168.132.60
-scp -o StrictHostKeyChecking=no root@$ipmaster:/home/vagrant/munge.key /home/vagrant/munge.key
-mv /home/vagrant/munge.key /etc/munge/munge.key
-
-
-chown munge:munge /etc/munge/munge.key
-chown -R munge:munge /var/lib/munge
-chown munge:munge /var/log/munge
-chown munge:munge /etc/munge
-chown munge:munge /var/log/munge/munged.log
-chmod 400 /etc/munge/munge.key
-chmod 700 /etc/munge
-
-# chown -R munge:munge /etc/munge /var/run/munge
-# mkdir -p /runu/munge
-# chmod 0755 /run/munge
-# chown munge:munge /run/munge
-# chmod 0600 /etc/munge/munge.key
-
-systemctl start munge
-
-
-######      INSTALL SLURM       ######
-sudo dnf install -y slurm-slurmd slurm-pam_slurm
-
+##
+## Remove default config and put a proper one
+##
 rm -f /etc/slurm/slurm.conf
+
 cat << EOF | sudo tee /etc/slurm/slurm.conf
 ClusterName=slurmcluster
 SlurmctldHost=kube-00
@@ -121,17 +63,18 @@ NodeName=kube-02 NodeAddr=192.168.132.62 CPUs=2 RealMemory=1953
 # values and not a reinitialize the default values.
 
 PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP
+PartitionName=prod Nodes=kube-01,kube-02 Default=NO MaxTime=INFINITE State=UP
 EOF
 
+dnf install -y slurm-slurmctld
+systemctl enable slurmctld
+systemctl start slurmctld
 systemctl enable slurmd
 systemctl start slurmd
 
-chown -R slurm:slurm /var/spool/slurm/
 
 
-
-########## Set the right permission also there:
-
+###### Set the right permission also there:
 mkdir -p /run/slurm
 chmod 0755 /run/slurm
 chown -R slurm:slurm /run/slurm
@@ -139,5 +82,5 @@ mkdir -p /var/spool/slurm
 chown -R slurm:slurm /var/spool/slurm
 chown -R slurm:slurm /var/log/slurm
 
-mkdir -p /var/lib/slurm/slurmd/
+mkdir -p /var/lib/slurm/slurmd
 sudo chown -R slurm:slurm /var/lib/slurm/slurmd/

@@ -27,8 +27,9 @@ scripts = [
 ]
 
 tocopy = [
-  './scripts/deploy_flannel.sh',
-  './scripts/deploy_calico.sh',
+  '.CNIs/deploy_flannel.sh',
+  '.CNIs/deploy_calico.sh',
+  'CNIs/install_cilium_cli.sh',
 ]
 
 Vagrant.configure("2") do |config|

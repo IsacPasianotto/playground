@@ -89,7 +89,7 @@ chmod 600 /root/.ssh/authorized_keys;
 # tools
 sudo dnf install -y bat htop \
      tmux curl git util-linux-user \
-     podman helm \
+     podman helm golang \
      nfs-utils libnfsidmap sssd-nfs-idmap \
      munge munge-libs munge-devel \
      slurm-slurmd slurm-pam_slurm \

@@ -1,0 +1,27 @@
+#+title: About the files in this folder
+
+* connectivity-test.yaml
+
+[[./connectivity-test.yaml][This file]] is a simple example which will spawn 2 containers, in two different nodes, to test if they are able to communicate with each other.
+A server container will be spawned and will listen forever (or until the test is stopped) on port ~6000~.
+
+You will just spawn a shell inside the client container and try to ping the server container with ~hping3~.
+The pods are accessible through an associate service.
+
+Remeber that in Kubernetes a container can be resolved by: ~<pod-name>.<service-name>.<namespace>.svc.cluster.local~,
+if you will use the default namespace and the default provided file, your ping command will be:
+
+#+begin_src sh
+hping3 -S -p 6000 nc-server-0.nc-server.default.svc.cluster.local
+#+end_src
+
+The expected output is:
+
+ * output of ~hping3~ command if the server pod is reachable
+ * ~unable to resolve <address>~ if the server pod is not reachable
+
+* Latency test
+
+[[./latency-1-node.yaml][latency-1-node]] and [[./latency-2-nodes.yaml][latency-2-nodes]] are two examples in which two pods are spanwed in the same node or in two different nodes, respectively.
+The two pods will run the [[https://mvapich.cse.ohio-state.edu/benchmarks/][OSU MPI benchmarks]] to measure the latency between them.
+To run the test, the [[https://github.com/kubeflow/mpi-operator][MPI Operator]] must be deployed in the cluster.

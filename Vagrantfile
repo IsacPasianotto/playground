@@ -14,6 +14,7 @@ controlpscripts = [
   './scripts/30-slurm_common_provisioning.sh',
   './scripts/31-slurm_master.sh',
   './scripts/40-nfs_master.sh',
+  './scripts/50-compile_osu.sh'
 ]
 
 scripts = [
@@ -65,6 +66,11 @@ Vagrant.configure("2") do |config|
         # node.vm.provision :shell,
         #                   :inline => "kubectl taint nodes kube-00 node-role.kubernetes.io/control-plane-",
         #                   :privileged => true
+
+        # Install the last stable release of MPI-operator
+        node.vm.provision :shell,
+                          :inline => "kubectl apply --server-side -f https://raw.githubusercontent.com/kubeflow/mpi-operator/v0.6.0/deploy/v2beta1/mpi-operator.yaml",
+                          :privileged => false
 
         tocopy.each do |script|
           node.vm.provision :file,

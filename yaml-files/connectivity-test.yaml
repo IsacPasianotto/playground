@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nc-server
+  labels:
+    app: nc-server
+spec:
+  ports:
+  - port: 80
+    name: web
+  clusterIP: None
+  selector:
+    app: nc-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nc-client
+  labels:
+    app: nc-client
+spec:
+  ports:
+  - port: 80
+    name: web
+  clusterIP: None
+  selector:
+    app: nc-client
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nc-server
+spec:
+  selector:
+    matchLabels:
+      app: nc-server
+  serviceName: "nc-server"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "nc-server"
+    spec:
+      nodeName: "kube-01"
+      containers:
+      - name: "server"
+        image: "busybox"
+        command: ["nc"]
+        args:
+          - "-l"
+          - "-v"
+          - "-p"
+          - "6000"
+        securityContext:
+          privileged: true
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nc-client
+spec:
+  selector:
+    matchLabels:
+      app: nc-client
+  serviceName: "nc-client"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "nc-client"
+    spec:
+      nodeName: "kube-02"
+      containers:
+      - name: "client"
+        image: "pasianeight/swissknife:0.3"
+        command: ["sleep"]
+        args:
+          - "3600"
+        securityContext:
+          privileged: true

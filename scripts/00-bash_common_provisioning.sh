@@ -95,7 +95,8 @@ sudo dnf install -y bat htop \
      slurm-slurmd slurm-pam_slurm \
      openmpi openmpi-devel \
      gcc gcc-c++ gcc-gfortran \
-     wget vim
+     wget vim \
+     nc
 
 # Install k9s
 cd /tmp

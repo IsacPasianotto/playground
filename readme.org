@@ -33,17 +33,6 @@ vagrant plugin install vagrant-scp
 
 * 1. Set up the VMs
 
-The VMs are defined in the [[./Vagrantfile][Vagrantfile]] and can be customized to your needs.
-
-  * By default the cluster are composed by 1 master (~kube-00~) and 2 workers nodes.
-  * The VMs are based on Fedora cloud images
-  * ~k8s~ is used as Kuberentes cluster manager
-  * The default user is ~vagrant~ with password ~vagrant~
-  * In the home of ~vagrant~ user, there is mounted as shared folder among nodes the `shared` directory. 
-  * Feel free to changes number of nodes and resources, but be aware that:
-    - To run Kubernetes the minimum requirements are 2GB of RAM and 2 CPUs
-    - You need to manually adjust the files [[./scripts/slurm_install.sh][slurm_install.sh]] and [[./scripts/slurm_worker.sh][slurm_worker.sh]] to reflect the number of nodes and their names. This should be done both at the begin of the file, where it defines int ~/etc/hosts~ the names of the nodes, and  at the end, where it creates the ~slurm.conf~ file.
-
 To start the VMs run:
 
 #+begin_src sh
@@ -65,7 +54,7 @@ Note that `vagrant` take cares of the SSH keys and the IP addresses of the VMs, 
 You can control the cluster using the ~kubectl~ command. To do that you don't need to ssh into the master node every time, but you can use the ~kubeconfig~ file available in the ~vagrant~ user home directory. To use it, you can copy it to your local machine with:
 
 #+begin_src sh
-vagrant scp kube-00:/home/vagrant/.kube/config ./playground_kubeconfig.yaml 
+vagrant scp kube-00:/home/vagrant/.kube/config ./playground_kubeconfig.yaml
 #+end_src
 
 and then set the ~KUBECONFIG~ environment variable to point to the file:
@@ -75,57 +64,29 @@ export KUBECONFIG=$(pwd)/playground_kubeconfig.yaml
 #+end_src
 
 
-* 2. Set up the CNI
-
-** Install a CNI
-
-By default no Container Network Interface (CNI) is installed. You can choose between ~flannel~ and ~calico~ by running (ssh into the master node):
-
-#+begin_src sh
-/home/vagrant/deploy_calico.sh
-#+end_src
-
-or
-
-#+begin_src sh
-/home/vagrant/deploy_flannel.sh
-#+end_src
-
-this will launch the already pre-configured scripts [[./scripts/deploy_calico.sh][deploy_calico.sh]] and [[./scripts/deploy_flannel.sh][deploy_flannel.sh]].
-
-**Important**: once the CNI is installed - you can check it using ~kubectl~ or ~k9s~ - you must restart all the nodes to apply the changes. To do that just run:
-
-#+begin_src sh
-vagrant reload
-#+end_src
-
-** Uninstall a CNI
-
-To switch between CNIs or to uninstall it, you can run:
-
-#+begin_src sh
-helm uninstall flannel --namespace kube-flannel
-#+end_src
-
-or
-
-#+begin_src sh
-kubectl delete -f /home/vagrant/calico.yaml
-#+end_src
-
-and then restart the nodes.
+**Important**: once a CNI plugin is installed - you can check it using ~kubectl~ or ~k9s~ - you must restart all the nodes to apply the changes.
 
 
 * 3. Use the virtual cluster in HPC-flavored mode
 
-The cluster is also configured to run Slurm, a job scheduler and resource manager for HPC systems. All the nodes are configured as a ~debug~ partition.
+The cluster is also configured to run Slurm, a job scheduler and resource manager for HPC systems.
+For example to request some resource:
 
-**Remark**: At this moment, due to some issues, the Slurm is working only for the ~root~ users. Enabling it for non-root users is a future TODO. Since this environment should be used for testing and learning purposes, this limitation should not be a big deal.
+#+begin_src
+salloc --partition=prod --nodes=2 --tasks-per-node=1
+#+end_src
 
 
 
-* *TODO* and working in progress:
+* Cluster specificatoins
 
-- [ ] Optimize the automatic deployment using ~Ansible~ and ~kubespray~
-- [ ] Enable Slurm for non-root users
-- [ ] Add more CNIs (e.g. ~cilium~)
+The VMs are defined in the [[./Vagrantfile][Vagrantfile]] and can be customized to your needs.
+
+  * By default the cluster are composed by 1 master (~kube-00~) and 2 workers nodes.
+  * The VMs are based on Fedora cloud images
+  * ~k8s~ is used as Kuberentes cluster manager
+  * The default user is ~vagrant~ with password ~vagrant~
+  * In the home of ~vagrant~ user, there is mounted as shared folder among nodes the `shared` directory. 
+  * Feel free to changes number of nodes and resources, but be aware that:
+    - To run Kubernetes the minimum requirements are 2GB of RAM and 2 CPUs
+    - You need to manually adjust the various config files edited during the deployment (have a look at [[./scripts][./scripts]] directory)
